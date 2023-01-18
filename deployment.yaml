@@ -1,51 +1,26 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend-service-stable
-spec:
-  type: LoadBalancer
-  selector:
-    app: myportfolio
-    type: frontend
-    track: stable
-  ports:
-  - protocol: TCP
-    port: 80
-    nodePort: 30008
-    targetPort: 4000
-
----
-  
 apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: portfolio-deployment-canary
-  labels:
-    app: myportfolio
-    type: frontend
-spec:
-  replicas: 2
+kind: Deployment 
+metadata: 
+  name: nginx-deployment
+  namespace: dev
+spec: 
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1 
   selector:
     matchLabels:
-      app: myportfolio
-      type: frontend
-      track: stable
+      app: webapp
   template:
     metadata:
-      labels:
-        app: myportfolio
-        type: frontend
-        track: stable
+      labels: 
+         app: webapp
     spec:
       containers:
-      - name: portfolio
-        image: eswararavind/docker:${DOCKER_TAG}
-        ports:
-        - containerPort: 4000
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 4000
-          initialDelaySeconds: 15
-          timeoutSeconds: 1
-          periodSeconds: 10
+        - name: nginx 
+          image: eswararavind/docker:${DOCKER_TAG}
+          ports:
+            - containerPort: 80 
+               
